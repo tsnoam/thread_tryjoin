@@ -3,5 +3,19 @@ name = "thread_tryjoin"
 version = "0.1.0"
 authors = ["Jan-Erik Rediger <janerik@fnordig.de>"]
 
+description = "Try joining a thread"
+license = "MIT"
+
+homepage = "https://github.com/badboy/thread_tryjoin"
+repository = "https://github.com/badboy/thread_tryjoin"
+documentation = "https://badboy.github.io/thread_tryjoin"
+
+include = [
+  "README.md",
+  "LICENSE",
+  "Cargo.toml",
+  "src/**/*"
+]
+
 [dependencies]
 libc = "0.2"

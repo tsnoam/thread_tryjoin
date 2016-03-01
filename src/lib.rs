@@ -1,3 +1,32 @@
+//! thread_tryjoin
+//!
+//! **Please don't use this as is**
+//!
+//! Ever needed to wait for a thread to finish, but thought you can still do work until it
+//! finishes?
+//!
+//! [`JoinHandle#join()`](http://doc.rust-lang.org/stable/std/thread/struct.JoinHandle.html#method.join)
+//! waits for the thread to finish and is blocking, so it doesn't allow you to try again and again.
+//!
+//! Luckily there is a non-portable `pthread` API:
+//! [`pthread_tryjoin_np`](http://linux.die.net/man/3/pthread_tryjoin_np)
+//!
+//! This library provides convenient access through a `try_join` method on `JoinHandle`.
+//! It only works on Linux though. And it works by transmuting the internal struct into a
+//! crate-local struct, as the internals of `JoinHandle` are private to libstd.
+//!
+//! # Example
+//!
+//! ```rust
+//! # use std::time::Duration;
+//! # use std::thread;
+//! use thread_tryjoin::TryJoinHandle;
+//!
+//! let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); });
+//! assert!(t.try_join().is_err());
+//! ```
+#![deny(missing_docs)]
+
 extern crate libc;
 
 use std::{thread, mem, ptr};
@@ -9,11 +38,11 @@ extern "C" {
     fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *const libc::c_void) -> libc::c_int;
 }
 
-pub struct ImpThread {
+struct ImpThread {
     id: libc::pthread_t,
 }
 
-pub type AnyResult<T> = Result<T, Box<Any + Send + 'static>>;
+type AnyResult<T> = Result<T, Box<Any + Send + 'static>>;
 
 struct Packet<T>(Arc<UnsafeCell<Option<AnyResult<T>>>>);
 struct JoinInner<T> {
@@ -31,7 +60,9 @@ unsafe fn join_handle_to_my<T>(handle: &thread::JoinHandle<T>) -> &JoinHandle<T>
     mem::transmute(handle)
 }
 
-trait TryJoinHandle {
+/// Try joining a thread
+pub trait TryJoinHandle {
+    /// Try joining a thread
     fn try_join(&self) -> Result<(), ()>;
 }
 
