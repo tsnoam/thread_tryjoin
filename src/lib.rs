@@ -1,6 +1,4 @@
-//! thread_tryjoin
-//!
-//! **Please don't use this as is**
+//! # thread_tryjoin
 //!
 //! Ever needed to wait for a thread to finish, but thought you can still do work until it
 //! finishes?
@@ -12,8 +10,9 @@
 //! [`pthread_tryjoin_np`](http://linux.die.net/man/3/pthread_tryjoin_np)
 //!
 //! This library provides convenient access through a `try_join` method on `JoinHandle`.
-//! It only works on Linux though. And it works by transmuting the internal struct into a
-//! crate-local struct, as the internals of `JoinHandle` are private to libstd.
+//! It only works on Linux though.
+//! It uses [`JoinHandleExt`](https://doc.rust-lang.org/stable/std/os/unix/thread/trait.JoinHandleExt.html)
+//! to get to the underlying `pthread_t` handle.
 //!
 //! # Example
 //!
