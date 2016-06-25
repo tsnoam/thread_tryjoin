@@ -30,6 +30,7 @@ extern crate libc;
 
 use std::{thread, ptr};
 use std::os::unix::thread::JoinHandleExt;
+use std::io::Error as IoError;
 
 #[cfg(unix)]
 extern "C" {
@@ -39,18 +40,18 @@ extern "C" {
 /// Try joining a thread
 pub trait TryJoinHandle {
     /// Try joining a thread
-    fn try_join(&self) -> Result<(), ()>;
+    fn try_join(&self) -> Result<(), IoError>;
 }
 
 #[cfg(unix)]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
-    fn try_join(&self) -> Result<(), ()> {
+    fn try_join(&self) -> Result<(), IoError> {
         unsafe {
             let thread = self.as_pthread_t();
 
             match pthread_tryjoin_np(thread, ptr::null_mut()) {
                 0 => Ok(()),
-                _ => Err(())
+                err @ _ => Err(IoError::from_raw_os_error(err))
             }
         }
     }
@@ -58,15 +59,14 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
 #[cfg(not(unix))]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
-    fn try_join(&self) -> Result<(), ()> {
-        Err(())
+    fn try_join(&self) -> Result<(), IoError> {
+        Err(IoError::from_raw_os_error(2))
     }
 }
 
 #[test]
 fn basic_join() {
-    use std::time::Duration;
-    let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); });
+    let t = thread::spawn(|| { });
 
     assert!(t.join().is_ok());
 }
@@ -74,8 +74,14 @@ fn basic_join() {
 #[test]
 fn basic_try_join() {
     use std::time::Duration;
-    let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); });
-    assert!(t.try_join().is_err());
+    let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); "ok" });
+
+    let err = t.try_join().unwrap_err();
+    // 16 is EBUSY
+    assert_eq!(Some(16), err.raw_os_error());
+
     thread::sleep(Duration::from_secs(2));
+
     assert!(t.try_join().is_ok());
+    assert_eq!("ok", t.join().unwrap());
 }
