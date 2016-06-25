@@ -29,35 +29,11 @@
 
 extern crate libc;
 
-use std::{thread, mem, ptr};
-use std::sync::Arc;
-use std::cell::UnsafeCell;
-use std::any::Any;
+use std::{thread, ptr};
+use std::os::unix::thread::JoinHandleExt;
 
 extern "C" {
     fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *const libc::c_void) -> libc::c_int;
-}
-
-struct ImpThread {
-    id: libc::pthread_t,
-}
-
-type AnyResult<T> = Result<T, Box<Any + Send + 'static>>;
-
-struct Packet<T>(Arc<UnsafeCell<Option<AnyResult<T>>>>);
-struct JoinInner<T> {
-    native: Option<ImpThread>,
-    _thread: thread::Thread,
-    _packet: Packet<T>,
-}
-struct JoinHandle<T>(JoinInner<T>);
-
-impl<T> JoinHandle<T> {
-    fn as_inner(&self) -> &ImpThread { self.0.native.as_ref().unwrap()  }
-}
-
-unsafe fn join_handle_to_my<T>(handle: &thread::JoinHandle<T>) -> &JoinHandle<T> {
-    mem::transmute(handle)
 }
 
 /// Try joining a thread
@@ -70,10 +46,9 @@ pub trait TryJoinHandle {
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
     fn try_join(&self) -> Result<(), ()> {
         unsafe {
-            let h = join_handle_to_my(self);
-            let inner = h.as_inner();
+            let thread = self.as_pthread_t();
 
-            match pthread_tryjoin_np(inner.id, ptr::null()) {
+            match pthread_tryjoin_np(thread, ptr::null()) {
                 0 => Ok(()),
                 _ => Err(())
             }
