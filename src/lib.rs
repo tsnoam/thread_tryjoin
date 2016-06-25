@@ -31,6 +31,7 @@ extern crate libc;
 use std::{thread, ptr};
 use std::os::unix::thread::JoinHandleExt;
 
+#[cfg(unix)]
 extern "C" {
     fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *mut *mut libc::c_void) -> libc::c_int;
 }
