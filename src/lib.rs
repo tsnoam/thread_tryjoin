@@ -14,6 +14,8 @@
 //! It uses [`JoinHandleExt`](https://doc.rust-lang.org/stable/std/os/unix/thread/trait.JoinHandleExt.html)
 //! to get to the underlying `pthread_t` handle.
 //!
+//! Use an additional `join` to get to the actual underlying result of the thread.
+//!
 //! # Example
 //!
 //! ```rust
@@ -66,22 +68,32 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
 #[test]
 fn basic_join() {
-    let t = thread::spawn(|| { });
+    let t = thread::spawn(|| { "ok" });
 
-    assert!(t.join().is_ok());
+    assert_eq!("ok", t.join().unwrap());
 }
 
 #[test]
 fn basic_try_join() {
     use std::time::Duration;
-    let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); "ok" });
+    let t = thread::spawn(|| { "ok" });
+
+    // Need to sleep just a tiny bit
+    thread::sleep(Duration::from_millis(100));
+    assert!(t.try_join().is_ok());
+    assert_eq!("ok", t.join().unwrap());
+}
+
+#[test]
+fn failing_try_join() {
+    use std::time::Duration;
+    let t = thread::spawn(|| { thread::sleep(Duration::from_millis(500)); });
 
     let err = t.try_join().unwrap_err();
     // 16 is EBUSY
     assert_eq!(Some(16), err.raw_os_error());
 
-    thread::sleep(Duration::from_secs(2));
+    thread::sleep(Duration::from_secs(1));
 
     assert!(t.try_join().is_ok());
-    assert_eq!("ok", t.join().unwrap());
 }
