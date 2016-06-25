@@ -32,7 +32,7 @@ use std::{thread, ptr};
 use std::os::unix::thread::JoinHandleExt;
 
 extern "C" {
-    fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *const libc::c_void) -> libc::c_int;
+    fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *mut *mut libc::c_void) -> libc::c_int;
 }
 
 /// Try joining a thread
@@ -47,7 +47,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
         unsafe {
             let thread = self.as_pthread_t();
 
-            match pthread_tryjoin_np(thread, ptr::null()) {
+            match pthread_tryjoin_np(thread, ptr::null_mut()) {
                 0 => Ok(()),
                 _ => Err(())
             }
