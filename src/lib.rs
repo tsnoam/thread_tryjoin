@@ -66,34 +66,39 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
     }
 }
 
-#[test]
-fn basic_join() {
-    let t = thread::spawn(|| { "ok" });
-
-    assert_eq!("ok", t.join().unwrap());
-}
-
-#[test]
-fn basic_try_join() {
+#[cfg(test)]
+mod test {
+    use super::*;
+    use std::thread;
     use std::time::Duration;
-    let t = thread::spawn(|| { "ok" });
 
-    // Need to sleep just a tiny bit
-    thread::sleep(Duration::from_millis(100));
-    assert!(t.try_join().is_ok());
-    assert_eq!("ok", t.join().unwrap());
-}
+    #[test]
+    fn basic_join() {
+        let t = thread::spawn(|| { "ok" });
 
-#[test]
-fn failing_try_join() {
-    use std::time::Duration;
-    let t = thread::spawn(|| { thread::sleep(Duration::from_millis(500)); });
+        assert_eq!("ok", t.join().unwrap());
+    }
 
-    let err = t.try_join().unwrap_err();
-    // 16 is EBUSY
-    assert_eq!(Some(16), err.raw_os_error());
+    #[test]
+    fn basic_try_join() {
+        let t = thread::spawn(|| { "ok" });
 
-    thread::sleep(Duration::from_secs(1));
+        // Need to sleep just a tiny bit
+        thread::sleep(Duration::from_millis(100));
+        assert!(t.try_join().is_ok());
+        assert_eq!("ok", t.join().unwrap());
+    }
 
-    assert!(t.try_join().is_ok());
+    #[test]
+    fn failing_try_join() {
+        let t = thread::spawn(|| { thread::sleep(Duration::from_millis(500)); });
+
+        let err = t.try_join().unwrap_err();
+        // 16 is EBUSY
+        assert_eq!(Some(16), err.raw_os_error());
+
+        thread::sleep(Duration::from_secs(1));
+
+        assert!(t.try_join().is_ok());
+    }
 }
