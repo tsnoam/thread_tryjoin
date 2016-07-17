@@ -22,7 +22,8 @@ script:
       travis-cargo test &&
       travis-cargo --only stable doc
 after_success:
-  - [ "$TRAVIS_OS_NAME" = "linux" ] && travis-cargo --only stable doc-upload
+  - |
+      [ "$TRAVIS_OS_NAME" = "linux" ] && travis-cargo --only stable doc-upload
 
 env:
   global:
