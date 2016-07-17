@@ -62,7 +62,8 @@ use std::ptr;
 use std::os::unix::thread::JoinHandleExt;
 use std::io::Error as IoError;
 #[cfg(target_os = "linux")]
-use std::time::{self, Duration, SystemTime};
+use std::time::{self, SystemTime};
+use std::time::Duration;
 
 #[cfg(target_os = "linux")]
 extern "C" {
