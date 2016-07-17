@@ -50,7 +50,7 @@ use std::os::unix::thread::JoinHandleExt;
 use std::io::Error as IoError;
 use std::time::{self, Duration, SystemTime};
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 extern "C" {
     fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *mut *mut libc::c_void) -> libc::c_int;
     fn pthread_timedjoin_np(thread: libc::pthread_t,
@@ -71,7 +71,7 @@ pub trait TryJoinHandle {
     fn try_timed_join(&self, wait: Duration) -> Result<(), IoError>;
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "linux")]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
     fn try_join(&self) -> Result<(), IoError> {
         unsafe {
@@ -103,7 +103,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
     }
 }
 
-#[cfg(not(unix))]
+#[cfg(not(target_os = "linux"))]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
     fn try_join(&self) -> Result<(), IoError> {
         Err(IoError::from_raw_os_error(2))
@@ -114,7 +114,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "linux"))]
 mod test {
     use super::*;
     use std::thread;
