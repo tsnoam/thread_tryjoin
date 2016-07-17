@@ -55,9 +55,13 @@
 
 extern crate libc;
 
-use std::{thread, ptr};
+use std::thread;
+#[cfg(target_os = "linux")]
+use std::ptr;
+#[cfg(target_os = "linux")]
 use std::os::unix::thread::JoinHandleExt;
 use std::io::Error as IoError;
+#[cfg(target_os = "linux")]
 use std::time::{self, Duration, SystemTime};
 
 #[cfg(target_os = "linux")]
