@@ -1,6 +1,10 @@
 language: rust
 sudo: false
 
+os:
+  - linux
+  - osx
+
 # run builds for both all the trains
 rust:
   - stable
@@ -10,7 +14,7 @@ rust:
 before_script:
   - |
       pip install 'travis-cargo<0.2' --user &&
-      export PATH=$HOME/.local/bin:$PATH
+      export PATH=$HOME/.local/bin:/Users/travis/Library/Python/2.7/bin:$PATH
 
 script:
   - |
@@ -18,7 +22,8 @@ script:
       travis-cargo test &&
       travis-cargo --only stable doc
 after_success:
-  - travis-cargo --only stable doc-upload
+  - |
+      [ "$TRAVIS_OS_NAME" = "linux" ] && travis-cargo --only stable doc-upload
 
 env:
   global:
@@ -26,5 +31,4 @@ env:
     - secure: "xnlKqwtsnANeDdOJl914K97Ae842jI+vSCF3JeQPByWM4zrSnDZ4N2V65PwJhM8Rmam8o3bgtP7crUK0RtTwy2Q14cMEpjoc4Pqu9sk5EG4yA18adCFL6UBvAbUlqm2TJ8GDXE5x+bXBpDU5CG/h73T1rKJigxhsPshB2CVDq5h6RA9Oo73tB5xiXaSWZiS3cBzi3250MJdozZBn45zbzqn6fIN1rL3o4Hl2+GUxzRBePfjSAXyUkpeOTbAwenuP5GEaFPCjkFe8EizAYFgOYmDrGTAJ8g/ZtuWyZH7ZfA00M/2JlseTnbk9MGagEan3XlN9z4PvCzSOAzVwgLm05aSpCwtXpONk3SwE8sIAxN7VUvipSh+OslCcw1JjkQfBFWfdilcjEFqb7QytX6E3aGsVVhk+R41HttgG/elzwLKEzvCpuynlbAc6E2waWxEtvHmtZU+t/ppWhNBiBFc9UtT682uLeOH01V0D7NSkg45hGmQm+bCfIVadV0Kwl655FSIziIljDfRt5H2jkt6sj+qpx+J6oM7p3Yq9mFRecRoW0XtBxfebUH8c2eLJ+ufu7lTzA4546db707ZvlPWSq278NLyoHTamMwlAKonz/JE1pDugLujsLKGtBKDJWw0KCEjYhoRznu4lRzjIhIYYF7GvHnZG+trTRyoC5CLHl9k="
 
 notifications:
-  email:
-    on_success: never
+  email: false
