@@ -1,6 +1,10 @@
 language: rust
 sudo: false
 
+os:
+  - linux
+  - osx
+
 # run builds for both all the trains
 rust:
   - stable
