@@ -21,10 +21,15 @@
 //! ```rust
 //! # use std::time::Duration;
 //! # use std::thread;
+//! # #[cfg(not(target_os = "linux"))]
+//! # fn main() {}
+//! # #[cfg(target_os = "linux")]
+//! # fn main() {
 //! use thread_tryjoin::TryJoinHandle;
 //!
 //! let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); });
 //! assert!(t.try_join().is_err());
+//! # }
 //! ```
 //!
 //! To perform a join-with-timeout there is a `try_timed_join` method.
@@ -34,12 +39,17 @@
 //! ```rust
 //! # use std::time::Duration;
 //! # use std::thread;
+//! # #[cfg(not(target_os = "linux"))]
+//! # fn main() {}
+//! # #[cfg(target_os = "linux")]
+//! # fn main() {
 //! use thread_tryjoin::TryJoinHandle;
 //!
 //! let t = thread::spawn(|| {
 //!     thread::sleep(Duration::from_millis(200));
 //! });
 //! assert!(t.try_timed_join(Duration::from_millis(500)).is_ok());
+//! # }
 //! ```
 #![deny(missing_docs)]
 
