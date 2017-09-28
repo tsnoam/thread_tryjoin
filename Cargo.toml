@@ -1,21 +1,13 @@
 [package]
 name = "thread_tryjoin"
-version = "0.1.0"
-authors = ["Jan-Erik Rediger <janerik@fnordig.de>"]
-
+version = "0.2.0"
+license = "MIT/Apache-2.0"
+authors = ["Jan-Erik Rediger <janerik@fnordig.de>", "Bob <nottxy@gmail.com>"]
+keywords = ["thread", "tryjoin"]
 description = "Try joining a thread"
-license = "MIT"
-
-homepage = "https://github.com/badboy/thread_tryjoin"
-repository = "https://github.com/badboy/thread_tryjoin"
-documentation = "https://badboy.github.io/thread_tryjoin"
-
-include = [
-  "README.md",
-  "LICENSE",
-  "Cargo.toml",
-  "src/**/*"
-]
+homepage = "https://github.com/nottxy/thread_tryjoin"
+repository = "https://github.com/nottxy/thread_tryjoin"
+documentation = "https://docs.rs/thread_tryjoin"
 
 [dependencies]
 libc = "0.2"

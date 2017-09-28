@@ -1,5 +1,3 @@
-//! # thread_tryjoin
-//!
 //! Ever needed to wait for a thread to finish, but thought you can still do work until it
 //! finishes?
 //!
@@ -68,9 +66,11 @@ use std::time::Duration;
 #[cfg(target_os = "linux")]
 extern "C" {
     fn pthread_tryjoin_np(thread: libc::pthread_t, retval: *mut *mut libc::c_void) -> libc::c_int;
-    fn pthread_timedjoin_np(thread: libc::pthread_t,
-                            retval: *mut *mut libc::c_void,
-                            abstime: *const libc::timespec) -> libc::c_int;
+    fn pthread_timedjoin_np(
+        thread: libc::pthread_t,
+        retval: *mut *mut libc::c_void,
+        abstime: *const libc::timespec,
+    ) -> libc::c_int;
 }
 
 /// Try joining a thread.
@@ -94,7 +94,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             match pthread_tryjoin_np(thread, ptr::null_mut()) {
                 0 => Ok(()),
-                err @ _ => Err(IoError::from_raw_os_error(err))
+                err @ _ => Err(IoError::from_raw_os_error(err)),
             }
         }
     }
@@ -104,15 +104,17 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             let now = SystemTime::now();
             let future = now + wait;
-            let total = future.duration_since(time::UNIX_EPOCH).expect("Can't get time offset");
+            let total = future.duration_since(time::UNIX_EPOCH).expect(
+                "Can't get time offset",
+            );
             let abstime = libc::timespec {
                 tv_sec: total.as_secs() as i64,
-                tv_nsec: total.subsec_nanos() as i64
+                tv_nsec: total.subsec_nanos() as i64,
             };
 
             match pthread_timedjoin_np(thread, ptr::null_mut(), &abstime as *const libc::timespec) {
                 0 => Ok(()),
-                err @ _ => Err(IoError::from_raw_os_error(err))
+                err @ _ => Err(IoError::from_raw_os_error(err)),
             }
         }
     }
@@ -137,14 +139,14 @@ mod test {
 
     #[test]
     fn basic_join() {
-        let t = thread::spawn(|| { "ok" });
+        let t = thread::spawn(|| "ok");
 
         assert_eq!("ok", t.join().unwrap());
     }
 
     #[test]
     fn basic_try_join() {
-        let t = thread::spawn(|| { "ok" });
+        let t = thread::spawn(|| "ok");
 
         // Need to sleep just a tiny bit
         thread::sleep(Duration::from_millis(100));
@@ -167,7 +169,7 @@ mod test {
 
     #[test]
     fn basic_timed_join() {
-        let t = thread::spawn(|| { "ok" });
+        let t = thread::spawn(|| "ok");
         assert!(t.try_timed_join(Duration::from_secs(1)).is_ok());
     }
 

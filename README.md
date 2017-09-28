@@ -1,6 +1,6 @@
 # thread_tryjoin
 
-[![Build Status](https://travis-ci.org/badboy/thread_tryjoin-rs.svg?branch=master)](https://travis-ci.org/badboy/thread_tryjoin-rs)
+It is forked from https://github.com/badboy/thread_tryjoin-rs
 
 Ever needed to wait for a thread to finish, but thought you can still do work until it
 finishes?
@@ -13,10 +13,19 @@ Luckily there is a non-portable `pthread` API:
 
 This library provides convenient access through a `try_join` method on `JoinHandle`.
 It only works on Linux though.
-~~And it works by transmuting the internal struct into a crate-local struct, as the internals of `JoinHandle` are private to libstd.~~
+
 It uses [`JoinHandleExt`](https://doc.rust-lang.org/stable/std/os/unix/thread/trait.JoinHandleExt.html) to get to the underlying `pthread_t` handle.
 
-## Example
+# Usage
+
+```toml
+[dependencies]
+thread_tryjoin = "0.2"
+```
+
+[Documentation](https://docs.rs/wild_thread_pool)
+
+# Example
 
 ```rust
 use std::time::Duration;
@@ -26,12 +35,20 @@ use thread_tryjoin::TryJoinHandle;
 let t = thread::spawn(|| { thread::sleep(Duration::from_secs(1)); });
 assert!(t.try_join().is_err());
 ```
-## [Documentation][]
 
-[Documentation is available online.][documentation]
+# License
 
-[documentation]: http://badboy.github.io/thread_tryjoin-rs/
+Licensed under either of
 
-## License
+* Apache License, Version 2.0
+  ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+* MIT license
+  ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
 
-MIT. See [LICENSE](LICENSE).
+at your option.
+
+# Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.
