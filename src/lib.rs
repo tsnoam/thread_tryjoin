@@ -121,7 +121,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 }
 
 
-#[cfg(all(target_os = "linux", target_arch = "armv7"))]
+#[cfg(all(target_os = "linux", target_arch = "arm"))]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
     fn try_join(&self) -> Result<(), IoError> {
         unsafe {
