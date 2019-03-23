@@ -1,6 +1,6 @@
 [package]
 name = "thread_tryjoin"
-version = "0.2.0"
+version = "0.2.1"
 license = "MIT/Apache-2.0"
 authors = ["Jan-Erik Rediger <janerik@fnordig.de>", "Bob <nottxy@gmail.com>"]
 keywords = ["thread", "tryjoin"]
