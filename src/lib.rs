@@ -86,7 +86,7 @@ pub trait TryJoinHandle {
     fn try_timed_join(&self, wait: Duration) -> Result<(), IoError>;
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", any(target_arch = "x86", target_arch = "x86_64")))]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
     fn try_join(&self) -> Result<(), IoError> {
         unsafe {
@@ -110,6 +110,41 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
             let abstime = libc::timespec {
                 tv_sec: total.as_secs() as i64,
                 tv_nsec: total.subsec_nanos() as i64,
+            };
+
+            match pthread_timedjoin_np(thread, ptr::null_mut(), &abstime as *const libc::timespec) {
+                0 => Ok(()),
+                err @ _ => Err(IoError::from_raw_os_error(err)),
+            }
+        }
+    }
+}
+
+
+#[cfg(all(target_os = "linux", target_arch = "arm"))]
+impl<T> TryJoinHandle for thread::JoinHandle<T> {
+    fn try_join(&self) -> Result<(), IoError> {
+        unsafe {
+            let thread = self.as_pthread_t();
+
+            match pthread_tryjoin_np(thread, ptr::null_mut()) {
+                0 => Ok(()),
+                err @ _ => Err(IoError::from_raw_os_error(err)),
+            }
+        }
+    }
+    fn try_timed_join(&self, wait: Duration) -> Result<(), IoError> {
+        unsafe {
+            let thread = self.as_pthread_t();
+
+            let now = SystemTime::now();
+            let future = now + wait;
+            let total = future.duration_since(time::UNIX_EPOCH).expect(
+                "Can't get time offset",
+            );
+            let abstime = libc::timespec {
+                tv_sec: total.as_secs() as i32,
+                tv_nsec: total.subsec_nanos() as i32,
             };
 
             match pthread_timedjoin_np(thread, ptr::null_mut(), &abstime as *const libc::timespec) {
