@@ -53,15 +53,15 @@
 
 extern crate libc;
 
-use std::thread;
-#[cfg(target_os = "linux")]
-use std::ptr;
-#[cfg(target_os = "linux")]
-use std::os::unix::thread::JoinHandleExt;
 use std::io::Error as IoError;
 #[cfg(target_os = "linux")]
-use std::time::{self, SystemTime};
+use std::os::unix::thread::JoinHandleExt;
+#[cfg(target_os = "linux")]
+use std::ptr;
+use std::thread;
 use std::time::Duration;
+#[cfg(target_os = "linux")]
+use std::time::{self, SystemTime};
 
 #[cfg(target_os = "linux")]
 extern "C" {
@@ -104,9 +104,9 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             let now = SystemTime::now();
             let future = now + wait;
-            let total = future.duration_since(time::UNIX_EPOCH).expect(
-                "Can't get time offset",
-            );
+            let total = future
+                .duration_since(time::UNIX_EPOCH)
+                .expect("Can't get time offset");
             let abstime = libc::timespec {
                 tv_sec: total.as_secs() as i64,
                 tv_nsec: total.subsec_nanos() as i64,
@@ -119,7 +119,6 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
         }
     }
 }
-
 
 #[cfg(all(target_os = "linux", target_arch = "arm"))]
 impl<T> TryJoinHandle for thread::JoinHandle<T> {
@@ -139,9 +138,9 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             let now = SystemTime::now();
             let future = now + wait;
-            let total = future.duration_since(time::UNIX_EPOCH).expect(
-                "Can't get time offset",
-            );
+            let total = future
+                .duration_since(time::UNIX_EPOCH)
+                .expect("Can't get time offset");
             let abstime = libc::timespec {
                 tv_sec: total.as_secs() as i32,
                 tv_nsec: total.subsec_nanos() as i32,
@@ -191,7 +190,9 @@ mod test {
 
     #[test]
     fn failing_try_join() {
-        let t = thread::spawn(|| { thread::sleep(Duration::from_millis(500)); });
+        let t = thread::spawn(|| {
+            thread::sleep(Duration::from_millis(500));
+        });
 
         let err = t.try_join().unwrap_err();
         // 16 is EBUSY
@@ -210,13 +211,17 @@ mod test {
 
     #[test]
     fn timed_join_timeout() {
-        let t = thread::spawn(|| { thread::sleep(Duration::from_millis(500)); });
+        let t = thread::spawn(|| {
+            thread::sleep(Duration::from_millis(500));
+        });
         assert!(t.try_timed_join(Duration::from_millis(100)).is_err());
     }
 
     #[test]
     fn timed_join_works() {
-        let t = thread::spawn(|| { thread::sleep(Duration::from_millis(100)); });
+        let t = thread::spawn(|| {
+            thread::sleep(Duration::from_millis(100));
+        });
         assert!(t.try_timed_join(Duration::from_millis(500)).is_ok());
     }
 }
