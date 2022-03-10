@@ -94,7 +94,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             match pthread_tryjoin_np(thread, ptr::null_mut()) {
                 0 => Ok(()),
-                err @ _ => Err(IoError::from_raw_os_error(err)),
+                err => Err(IoError::from_raw_os_error(err)),
             }
         }
     }
@@ -114,7 +114,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
 
             match pthread_timedjoin_np(thread, ptr::null_mut(), &abstime as *const libc::timespec) {
                 0 => Ok(()),
-                err @ _ => Err(IoError::from_raw_os_error(err)),
+                err => Err(IoError::from_raw_os_error(err)),
             }
         }
     }
@@ -193,7 +193,6 @@ mod test {
         // Need to sleep just a tiny bit
         thread::sleep(Duration::from_millis(100));
         assert!(t.try_join().is_ok());
-        assert_eq!("ok", t.join().unwrap());
     }
 
     #[test]
