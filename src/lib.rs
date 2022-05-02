@@ -92,7 +92,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
         unsafe {
             let thread = self.as_pthread_t();
 
-            match pthread_tryjoin_np(thread, ptr::null_mut()) {
+            match pthread_tryjoin_np(thread as _, ptr::null_mut()) {
                 0 => Ok(()),
                 err => Err(IoError::from_raw_os_error(err)),
             }
@@ -112,7 +112,7 @@ impl<T> TryJoinHandle for thread::JoinHandle<T> {
                 tv_nsec: total.subsec_nanos() as i64,
             };
 
-            match pthread_timedjoin_np(thread, ptr::null_mut(), &abstime as *const libc::timespec) {
+            match pthread_timedjoin_np(thread as _, ptr::null_mut(), &abstime as *const libc::timespec) {
                 0 => Ok(()),
                 err => Err(IoError::from_raw_os_error(err)),
             }
